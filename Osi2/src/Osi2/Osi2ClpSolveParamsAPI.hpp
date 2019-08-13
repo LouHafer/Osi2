@@ -1,6 +1,11 @@
 #ifndef Osi2ClpSolveParamsAPI_HPP
 # define Osi2ClpSolveParamsAPI_HPP
 
+/*! \file Osi2ClpSolveParamsAPI.hpp
+
+  Provides an %API corresponding to the ClpSolve class.
+*/
+
 #include <vector>
 
 #include "Coin_C_defines.h"

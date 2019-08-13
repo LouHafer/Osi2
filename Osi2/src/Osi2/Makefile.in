@@ -151,7 +151,7 @@ am__DEPENDENCIES_1 =
 libOsi2_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libOsi2_la_OBJECTS = Osi2ControlAPI_Imp.lo Osi2CtrlAPIMessages.lo \
 	Osi2ParamMgmtAPI_Imp.lo Osi2ParamMgmtAPIMessages.lo \
-	Osi2ParamBEAPIMessages.lo
+	Osi2ParamBEAPIMessages.lo Osi2RunParamsAPI_Imp.lo
 libOsi2_la_OBJECTS = $(am_libOsi2_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -179,7 +179,8 @@ am__depfiles_remade = ./$(DEPDIR)/Osi2ControlAPI_Imp.Plo \
 	./$(DEPDIR)/Osi2CtrlAPIMessages.Plo \
 	./$(DEPDIR)/Osi2ParamBEAPIMessages.Plo \
 	./$(DEPDIR)/Osi2ParamMgmtAPIMessages.Plo \
-	./$(DEPDIR)/Osi2ParamMgmtAPI_Imp.Plo
+	./$(DEPDIR)/Osi2ParamMgmtAPI_Imp.Plo \
+	./$(DEPDIR)/Osi2RunParamsAPI_Imp.Plo
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -460,7 +461,9 @@ libOsi2_la_SOURCES = \
 	Osi2ParamMgmtAPI_Imp.hpp Osi2ParamMgmtAPI_Imp.cpp \
 	Osi2ParamMgmtAPIMessages.hpp Osi2ParamMgmtAPIMessages.cpp \
 	Osi2ParamBEAPI_Imp.hpp \
-	Osi2ParamBEAPIMessages.hpp Osi2ParamBEAPIMessages.cpp
+	Osi2ParamBEAPIMessages.hpp Osi2ParamBEAPIMessages.cpp \
+	Osi2RunParamsAPI.hpp \
+	Osi2RunParamsAPI_Imp.hpp Osi2RunParamsAPI_Imp.cpp
 
 
 # List all additionally required libraries.
@@ -595,6 +598,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ParamBEAPIMessages.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ParamMgmtAPIMessages.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2ParamMgmtAPI_Imp.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Osi2RunParamsAPI_Imp.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -749,6 +753,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/Osi2ParamBEAPIMessages.Plo
 	-rm -f ./$(DEPDIR)/Osi2ParamMgmtAPIMessages.Plo
 	-rm -f ./$(DEPDIR)/Osi2ParamMgmtAPI_Imp.Plo
+	-rm -f ./$(DEPDIR)/Osi2RunParamsAPI_Imp.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-tags
@@ -799,6 +804,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/Osi2ParamBEAPIMessages.Plo
 	-rm -f ./$(DEPDIR)/Osi2ParamMgmtAPIMessages.Plo
 	-rm -f ./$(DEPDIR)/Osi2ParamMgmtAPI_Imp.Plo
+	-rm -f ./$(DEPDIR)/Osi2RunParamsAPI_Imp.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
