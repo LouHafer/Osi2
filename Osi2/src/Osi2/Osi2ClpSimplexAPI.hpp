@@ -7,6 +7,8 @@
 
 namespace Osi2 {
 
+class RunParamsAPI ;
+
 /*! \brief Provide the ClpSimplex `C' interface
 
   This %API exposes the portion of the ClpSimplex class provided by the Clp
@@ -41,7 +43,14 @@ public:
     bothFake = 0x03
   } ;
 
-  /*! \name Constructors, destructor, and copy */
+  /*! \name Constructors, destructor, and copy
+
+    Because construction is handled through ControlAPI, we don't need a
+    constructor. Arguably, we should not need a destructor, either.
+
+    \todo See if it's possible to get rid of the destructor; at least, make it
+    protected.
+  */
   //@{
 
   /// Destructor
@@ -241,8 +250,8 @@ public:
   int setProblemName(int maxNumberCharacters, char *array) ;
 
   /// Number of iterations
-  int numberIterations() ;
-  void setNumberIterations(int value) ;
+  virtual int numberIterations() const = 0 ;
+  virtual void setNumberIterations(int value) = 0 ;
   /// Maximum number of iterations
   int maximumIterations() ;
   void setMaximumIterations(int value) ;
@@ -252,12 +261,12 @@ public:
 
   /*! \brief Direction of optimisation
 
-    -1  maximise
-     0  ignore
-     1  minimise
+    -1.0  maximise
+     0.0  ignore
+     1.0  minimise
   */
-  double getObjSense() ;
-  void setObjSense(double value) ;
+  virtual double objSense() const = 0 ;
+  virtual void setObjSense(double value) = 0 ;
 
   /// Dual bound
   double dualBound() ;
@@ -279,9 +288,9 @@ public:
   int perturbation() ;
   void setPerturbation(int value) ;
 
-  /// Get algorithm
+  /// Get solve algorithm
   int algorithm() ;
-  /// Set algorithm
+  /// Set solve algorithm
   void setAlgorithm(int value) ;
 
   /*! \brief Get small element value
@@ -290,6 +299,19 @@ public:
   double getSmallElementValue() ;
   /// Set small element value
   void setSmallElementValue(double value) ;
+  //@}
+
+  /*! \name Bulk parameter manipulation
+
+    These methods work with a RunParamsAPI object to maintain a complete set
+    of parameters that can be applied in one operation.
+  */
+  //@{
+  /// Load a runParams object with parameters.
+  virtual void exposeParams(RunParamsAPI &runParams) const = 0 ;
+
+  /// Set ClpSimplex parameters from a RunParamsAPI object.
+  virtual void loadParams(RunParamsAPI &runParams) = 0 ;
   //@}
 
   /*! \name Information about the solution */

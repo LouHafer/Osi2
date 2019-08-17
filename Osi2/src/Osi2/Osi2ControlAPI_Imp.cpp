@@ -455,7 +455,11 @@ int ControlAPI_Imp::destroyObject (API *&obj)
     msgHandler_->printing(true) << CoinMessageEol ;
     retval = (libID == 0) ? 1 : 0 ;
   }
+/*
+  Cleanup: Delete the API control object and invalidate the original pointer.
+*/
   delete apiCtrl ;
+  obj = nullptr ;
 
   return (retval) ;
 }

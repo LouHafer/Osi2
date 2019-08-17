@@ -95,8 +95,8 @@ static Osi2::ExitFunc initPlugin (Osi2::PlatformServices *services)
   Register our API.
 */
   Osi2::APIRegInfo reginfo ;
-  reginfo.version_.major_ = 0 ;
-  reginfo.version_.minor_ = 5 ;
+  reginfo.version_.major_ = 1 ;
+  reginfo.version_.minor_ = 0 ;
   reginfo.pluginID_ = services->pluginID_ ;
   reginfo.lang_ = Osi2::Plugin_CPP ;
   reginfo.ctrlObj_ = nullptr ;

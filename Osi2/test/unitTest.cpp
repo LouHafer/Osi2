@@ -24,6 +24,8 @@
 #include "Osi2ClpLite_Wrap.hpp"
 #include "Osi2ClpSolveParamsAPI.hpp"
 
+#include "Osi2RunParamsAPI.hpp"
+
 using namespace Osi2 ;
 
 namespace {
@@ -481,77 +483,208 @@ int testParamMgmtAPI ()
   return (errCnt) ;
 }
 
+int testRunParamsAPI ()
+
+{ int errCnt = 0 ;
+  std::map<std::string,API *> extantObjs ;
+
+  ControlAPI_Imp ctrlAPI ;
+  std::cout
+      << "Instantiated a ControlAPI_Imp object "
+      << std::hex << &ctrlAPI << std::dec << "." << std::endl ;
+/*
+  Reload the RunParams plugin (unloaded as part of the plugin manager test).
+*/
+  std::string rpDir = "" ;
+  std::string rpShortName = "RunParams" ;
+  int retval = ctrlAPI.load(rpShortName,rpShortName,&rpDir) ;
+  if (retval != 0) {
+    std::cout
+      << "Error " << retval << " loading RunParams plugin."
+      << std::endl ;
+    errCnt++ ;
+    return (errCnt) ;
+  } else {
+    std::cout << "Loaded RunParams plugin." << std::endl ;
+  }
+/*
+  Instantiate a RunParams API object.
+*/
+  API *apiObj = nullptr ;
+  std::string rp1Name = "RunParams #1" ;
+  retval = ctrlAPI.createObject(apiObj,RunParamsAPI::getAPIIDString()) ;
+  if (retval != 0) {
+    std::cout
+      << "Error " << retval << " creating RunParamsAPI object."
+      << std::endl ;
+    errCnt++ ;
+    return (errCnt) ;
+  } else {
+    std::cout
+      << "Created RunParamsAPI object " << std::hex << apiObj << std::dec
+      << "." << std::endl ;
+    extantObjs[rp1Name] = apiObj ;
+  }
+  RunParamsAPI *rpObj = dynamic_cast<RunParamsAPI *>(apiObj) ;
+/*
+  Instantiate a ClpSimplex API object and load in a model.
+*/
+  apiObj = nullptr ;
+  std::string clpName = "ClpC" ;
+  retval = ctrlAPI.createObject(apiObj,ClpSimplexAPI::getAPIIDString()) ;
+  if (retval != 0) {
+    std::cout
+      << "Error " << retval << " creating ClpSimplexAPI object."
+      << std::endl ;
+    errCnt++ ;
+    return (errCnt) ;
+  } else {
+    std::cout
+      << "Created ClpSimplexAPI object " << std::hex << apiObj << std::dec
+      << "." << std::endl ;
+    extantObjs[clpName] = apiObj ;
+  }
+  ClpLite_Wrap *wrap = static_cast<ClpLite_Wrap *>(apiObj) ;
+  ClpSimplexAPI *clpObj =
+    static_cast<ClpSimplexAPI *>(wrap->getAPIPtr("ClpSimplex")) ;
+/*
+  Try to load a RunParams object. See what it holds.
+*/
+  clpObj->exposeParams(*rpObj) ;
+  rpObj->setStrParam("problem name","pilot") ;
+  rpObj->setDblParam("obj sense",1.0) ;
+  std::vector<std::string> paramNames = rpObj->getDblParamIds() ;
+  for (std::vector<std::string>::const_iterator iter = paramNames.begin() ;
+       iter != paramNames.end() ;
+       iter++) {
+    std::cout
+      << "  parameter " << *iter << " has value "
+      << rpObj->getDblParam(*iter) << "." << std::endl ;
+  }
+  std::cout
+    << "The problem name is " << rpObj->getStrParam("problem name")
+    << "." << std::endl ;
+  clpObj->readMps("../../share/coin-or-netlib/pilot.mps") ;
+  clpObj->loadParams(*rpObj) ;
+  clpObj->initialSolve() ;
+  std::cout
+    << "Solve took " << clpObj->numberIterations() << " iterations."
+    << std::endl ;
+  rpObj->setDblParam("obj sense",-1.0) ;
+  clpObj->readMps("../../share/coin-or-netlib/pilot.mps") ;
+  clpObj->loadParams(*rpObj) ;
+  clpObj->initialSolve() ;
+  std::cout
+    << "Solve took " << clpObj->numberIterations() << " iterations."
+    << std::endl ;
+/*
+  Destroy the objects we've created.
+*/
+  for (std::map<std::string,API *>::iterator iter = extantObjs.begin() ;
+       iter != extantObjs.end() ;
+       iter++) {
+    std::cout
+      << "Attempting to destroy " << iter->first << "." << std::endl ;
+    API *tmp = iter->second ;
+    retval = ctrlAPI.destroyObject(iter->second) ;
+    if (retval != 0) {
+      std::cout
+	<< "Error " << retval << " destroying RunParamsAPI object "
+	<< std::hex << tmp << std::dec << "."
+	<< std::endl ;
+      errCnt++ ;
+      return (errCnt) ;
+    } else {
+      std::cout
+	<< "Destroyed RunParamsAPI object " << std::hex << tmp << std::dec
+	<< "." << std::endl ;
+    }
+  }
+
+  return errCnt ;
+}
+
 } // end unnamed file-local namespace
 
 
 int main(int argC, char* argV[])
 {
 
-    std::cout << "START UNIT TEST" << std::endl ;
+  std::cout << "START UNIT TEST" << std::endl ;
 
-    std::string dfltSampleDir = "../../Data/Sample" ;
-    /*
-      Test the bare PluginManager. There's no sense proceeding to the API
-      tests if the PluginManager isn't working.
-    */
-    std::cout << "Testing bare PluginManager." << std::endl ;
-    int retval = testPluginManager("libOsi2ClpShim.so") ;
-    std::cout
-      << "End test of bare PluginManager, " << retval << " errors."
-      << std::endl << std::endl ;
-    if (retval != 0) {
-        std::cout
-	  << "Aborting unitTest; errors in PluginManager." << std::endl ;
-        return (retval) ;
-    }
-    /*
-      Now let's try the Osi2 control API.
-    */
-    typedef std::pair<std::string,int> TestVec ;
-    std::vector<TestVec> solvers ;
+  std::string dfltSampleDir = "../../Data/Sample" ;
+/*
+  Test the bare PluginManager. There's no sense proceeding to the API
+  tests if the PluginManager isn't working.
+*/
+  std::cout << "Testing bare PluginManager." << std::endl ;
+  int retval = testPluginManager("libOsi2ClpShim.so") ;
+  std::cout
+    << "End test of bare PluginManager, " << retval << " errors."
+    << std::endl << std::endl ;
+  if (retval != 0) {
+      std::cout
+	<< "Aborting unitTest; errors in PluginManager." << std::endl ;
+      return (retval) ;
+  }
+/*
+  Now let's try the Osi2 control API.
+*/
+  typedef std::pair<std::string,int> TestVec ;
+  std::vector<TestVec> solvers ;
 #if 0
-    Temporarily disable while ClpLite is under renovation -- lh, 190802 --
-    solvers.push_back(TestVec("clp",1)) ;
+  Temporarily disable while ClpLite is under renovation -- lh, 190802 --
+  solvers.push_back(TestVec("clp",1)) ;
 #endif
-    solvers.push_back(TestVec("clpHeavy",0)) ;
-#   ifdef COIN_HAS_OSIGLPK
-    solvers.push_back(TestVec("glpkHeavy",2)) ;
-#   endif
-    std::vector<TestVec>::const_iterator iter ;
-    int totalErrs = 0 ;
-    for (iter = solvers.begin() ; iter != solvers.end() ; iter++) {
-      std::string solverName = iter->first ;
-      std::cout
-        << "Testing ControlAPI (" << solverName << ")." << std::endl ;
-      retval = testControlAPI(solverName,dfltSampleDir) ;
-      std::cout
-          << "End test of ControlAPI (" << solverName << "), "
-	  << retval << " errors, expected " << iter->second << "."
-	  << std::endl << std::endl ;
-      totalErrs += retval-(iter->second) ;
-    }
-    /*
-      Test the parameter management API.
-    */
-    int errCnt = 0 ;
-    const int expectedErrs = 0 ;
-    std::cout << "Testing ParamMgmtAPI." << std::endl ;
-    errCnt = testParamMgmtAPI() ;
+  solvers.push_back(TestVec("clpHeavy",0)) ;
+# ifdef COIN_HAS_OSIGLPK
+  solvers.push_back(TestVec("glpkHeavy",2)) ;
+# endif
+  std::vector<TestVec>::const_iterator iter ;
+  int totalErrs = 0 ;
+  for (iter = solvers.begin() ; iter != solvers.end() ; iter++) {
+    std::string solverName = iter->first ;
     std::cout
-        << "End test of ParamMgmtAPI, " << errCnt << " errors, expected "
-	<< expectedErrs << "." << std::endl ;
-    /*
-      Shut down the plugin manager. This will call the plugin library exit
-      functions and unload the libraries.
-    */
-    PluginManager &plugMgr = PluginManager::getInstance() ;
+      << "Testing ControlAPI (" << solverName << ")." << std::endl ;
+    retval = testControlAPI(solverName,dfltSampleDir) ;
     std::cout
-      << "Shutting down plugins (executing exit functions)." << std::endl ;
-    plugMgr.shutdown() ;
+      << "End test of ControlAPI (" << solverName << "), "
+      << retval << " errors, expected " << iter->second << "."
+      << std::endl << std::endl ;
+    totalErrs += retval-(iter->second) ;
+  }
+/*
+  Test the parameter management API.
+*/
+  int errCnt = 0 ;
+  int expectedErrs = 0 ;
+  std::cout << "Testing ParamMgmtAPI." << std::endl ;
+  errCnt = testParamMgmtAPI() ;
+  std::cout
+    << "End test of ParamMgmtAPI, " << errCnt << " errors, expected "
+    << expectedErrs << "." << std::endl ;
+/*
+  Test the RunParams API.
+*/
+  std::cout << std::endl << std::endl ;
+  std::cout << "Testing RunParamsAPI." << std::endl ;
+  errCnt = testRunParamsAPI() ;
+  expectedErrs = 0 ;
+  std::cout
+    << "End test of RunParamsAPI, " << errCnt << " errors, expected "
+    << expectedErrs << "." << std::endl ;
+/*
+  Shut down the plugin manager. This will call the plugin library exit
+  functions and unload the libraries.
+*/
+  PluginManager &plugMgr = PluginManager::getInstance() ;
+  std::cout
+    << "Shutting down plugins (executing exit functions)." << std::endl ;
+  plugMgr.shutdown() ;
 
-    std::cout << "END UNIT TEST" << std::endl ;
+  std::cout << "END UNIT TEST" << std::endl ;
 
-    return (totalErrs) ;
+  return (totalErrs) ;
 
 }
 

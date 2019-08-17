@@ -43,7 +43,7 @@ public:
 	      bool ignoreErrors = false) ;
 //@}
 
-/*! \name Parameter Gets & Sets */
+/*! \name Parameter gets & sets */
 //@{
   /// Primal zero tolerance
   double primalTolerance() const ;
@@ -52,6 +52,40 @@ public:
   /// Dual zero tolerance
   double dualTolerance() const ;
   void setDualTolerance(double val) ;
+
+  /// Number of iterations
+  int numberIterations() const ;
+  void setNumberIterations(int val) ;
+
+  /*! \brief objective sense
+
+    -1 to maximise, 1 to minimise
+  */
+  double objSense() const ;
+  void setObjSense(double val) ;
+//@}
+
+/*! \name Bulk parameter manipulation
+
+  Methods for getting and setting parameters in a way that matches OSI2
+  standard parameter management. Also methods to work with a RunParamsAPI
+  object to get and set many parameters in a single operation.
+*/
+//@{
+  /// Get / set an integer parameter
+  int getIntParam(std::string name) const ;
+  void setIntParam(std::string name, int val) ;
+  /// Get / set a double parameter
+  double getDblParam(std::string name) const ;
+  void setDblParam(std::string name, double val) ;
+  /// Get / set a string parameter
+  std::string getStrParam(std::string name) const ;
+  void setStrParam(std::string name, std::string val) ;
+
+  /// Fill a RunParamsAPI object with parameters and current values
+  void exposeParams(RunParamsAPI &runParams) const ;
+  /// Load parameters from a RunParamsAPI object
+  void loadParams(RunParamsAPI &runParams) ;
 //@}
 
 /*! \name Functions must useful to user */

@@ -8,7 +8,7 @@
 */
 
 #include <string>
-#include <map>
+#include <vector>
 
 #include "Osi2API.hpp"
 
@@ -71,7 +71,7 @@ public:
 
   //@}
 
-  /*! \name Methods retrieve a parameter set */
+  /*! \name Methods to retrieve a parameter set */
   //@{
 
   /// Return the names of integer parameters

@@ -189,10 +189,10 @@ public:
 /*! \name Exported parameter list entries
 
   The class ParamEntry and its templated derived classes ParamEntry_Imp
-  record the information necessary to get and set the values of parameters in
-  the client object.
+  and ParamEntry_Gen record the information necessary to get and set the
+  values of parameters in the client object.
 
-  Each instantiation of a templated class ParamEntry_Imp encodes the data
+  Each instantiation of one of the templated classes encodes the data
   type of its parameter; this makes it possible to write wrapper functions
   for get and set that properly handle the data blob. ParamEntry and its
   derived classes must be member classes of ParamBEAPI_Imp because the type
@@ -288,8 +288,9 @@ public:
 
   /*! \brief Parameter list entry (generic get/set)
 
-    This class handles parameters that have generic get and set methods (i.e.,
-    a pair of methods that take a parameter name or similar identifier).
+    This class handles parameters that have generic get and set methods
+    (i.e., a pair of methods that take an identifier of some sort to
+    specify the parameter).
 
     An instance of this class is instantiated for a specific parameter data
     type (ValType) and a specific client class (Client). Together, this

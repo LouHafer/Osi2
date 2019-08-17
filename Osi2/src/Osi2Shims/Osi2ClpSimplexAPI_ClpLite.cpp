@@ -8,8 +8,8 @@
     \brief Method definitions for Osi2ClpSimplexAPI_ClpLite
 
   Method definitions for ClpSimplexAPI_ClpLite, an implementation of the
-  problem management API using the `lite' clp shim that dynamically loads
-  methods on demand.
+  ClpSimplex API using the `lite' clp shim that dynamically loads methods
+  on demand.
 */
 
 #include <iostream>
@@ -18,25 +18,86 @@
 #include "Osi2nullptr.hpp"
 
 #include "Osi2DynamicLibrary.hpp"
+#include "Osi2RunParamsAPI.hpp"
 
 #include "Osi2ClpSimplexAPI_ClpLite.hpp"
 
+namespace {
+
+// Templates for common function signatures
+
+#include "Osi2CFuncTemplates.cpp"
+
 /*
-  Various commonly used function typedefs, to avoid repeating them over and
-  over.
+  Static maps for know ClpSimplex integer, double, and string parameters. The
+  first string is the name exposed through Osi2 standard parameter interfaces,
+  the second the name of the C interface get method, the third the name of
+  the C interface set method.
 */
 
-typedef double (*rDp0)(Clp_Simplex *) ;
-typedef void (*rpVpD)(Clp_Simplex *, double) ;
+KnownMemberMap integerSimplexParams = {
+  mapEntry3("iter count","Clp_numberIterations","Clp_setNumberIterations"),
+  mapEntry3("iter max","Clp_maximumIterations","Clp_setMaximumIterations"),
+  mapEntry3("scaling","Clp_scalingFlag","Clp_scaling"),
+  mapEntry3("perturbation","Clp_perturbation","Clp_setPerturbation"),
+  mapEntry3("algorithm","Clp_algorithm","Clp_setAlgorithm")
+} ;
+  
+
+KnownMemberMap doubleSimplexParams = {
+  mapEntry3("primal zero tol","Clp_primalTolerance","Clp_setPrimalTolerance"),
+  mapEntry3("dual zero tol","Clp_dualTolerance","Clp_setDualTolerance"),
+  mapEntry3("dual obj lim",
+  	    "Clp_dualObjectiveLimit","Clp_setDualObjectiveLimit"),
+  mapEntry3("obj offset","Clp_objectiveOffset","Clp_setObjectiveOffset"),
+  mapEntry3("obj sense",
+  	    "Clp_optimizationDirection","Clp_setOptimizationDirection"),
+  mapEntry3("infeas cost","Clp_infeasibilityCost","Clp_setInfeasibilityCost"),
+  mapEntry3("small elem",
+  	    "Clp_getSmallElementValue","Clp_setSmallElementValue"),
+  mapEntry3("dual bound","Clp_dualBound","Clp_setDualBound")
+} ;
+
+
+KnownMemberMap stringSimplexParams = {
+  mapEntry3("problem name","Clp_problemName","Clp_setProblemName")
+} ;
+
+
+/*
+  Static map for known presolve transform names. The first string is the name
+  exposed through the parameter interface, the second the name of the
+  corresponding Clp_C_Interface ClpSolve method.
+*/
+
+typedef std::map<std::string,std::string>KnownXformMap ;
+KnownXformMap knownXforms = {
+  {std::string("return if infeasible"),std::string("infeasibleReturn")},
+  {std::string("dual"),std::string("doDual")},
+  {std::string("singleton"),std::string("doSingleton")},
+  {std::string("doubleton"),std::string("doDoubleton")},
+  {std::string("tripleton"),std::string("doTripleton")},
+  {std::string("tighten"),std::string("doTighten")},
+  {std::string("forcing"),std::string("doForcing")},
+  {std::string("implied free"),std::string("doImpliedFree")},
+  {std::string("dupcol"),std::string("doDupcol")},
+  {std::string("duprow"),std::string("doDuprow")},
+  {std::string("singleton column"),std::string("doSingletonColumn")},
+  {std::string("kill small"),std::string("doKillSmall")}
+} ;
+
+}    // end anonymous namespace
 
 
 namespace Osi2 {
 
+typedef ClpSimplexAPI_ClpLite CSA_CL ;
+
 /*
   Constructor
 */
-ClpSimplexAPI_ClpLite::ClpSimplexAPI_ClpLite (DynamicLibrary *libClp)
-    : paramMgr_(ParamBEAPI_Imp<ClpSimplexAPI_ClpLite>(this)),
+CSA_CL::ClpSimplexAPI_ClpLite (DynamicLibrary *libClp)
+    : paramMgr_(ParamBEAPI_Imp<CSA_CL>(this)),
       libClp_(libClp),
       clpC_(nullptr)
 {
@@ -60,20 +121,29 @@ ClpSimplexAPI_ClpLite::ClpSimplexAPI_ClpLite (DynamicLibrary *libClp)
 /*
   Register the parameters exposed through parameter management
 */
-  typedef ParamBEAPI_Imp<ClpSimplexAPI_ClpLite>::ParamEntry_Imp<double> DPE ;
-  ParamBEAPI_Imp<ClpSimplexAPI_ClpLite>::ParamEntry *paramEntry ;
+  typedef ParamBEAPI_Imp<CSA_CL>::ParamEntry_Imp<double> DPE ;
+  typedef ParamBEAPI_Imp<CSA_CL>::ParamEntry_Imp<int> IPE ;
+  ParamBEAPI_Imp<CSA_CL>::ParamEntry *paramEntry ;
   paramEntry = new DPE("primal tolerance",
-  		       &ClpSimplexAPI_ClpLite::primalTolerance,
-  		       &ClpSimplexAPI_ClpLite::setPrimalTolerance) ;
+  		       &CSA_CL::primalTolerance,
+  		       &CSA_CL::setPrimalTolerance) ;
   paramMgr_.addParam("primal tolerance",paramEntry) ;
   paramEntry = new DPE("dual tolerance",
-  		       &ClpSimplexAPI_ClpLite::dualTolerance,
-  		       &ClpSimplexAPI_ClpLite::setDualTolerance) ;
+  		       &CSA_CL::dualTolerance,
+  		       &CSA_CL::setDualTolerance) ;
   paramMgr_.addParam("dual tolerance",paramEntry) ;
+  paramEntry = new DPE("obj sense",
+  		       &CSA_CL::objSense,
+  		       &CSA_CL::setObjSense) ;
+  paramMgr_.addParam("dual tolerance",paramEntry) ;
+  paramEntry = new IPE("iter count",
+  		       &CSA_CL::numberIterations,
+  		       &CSA_CL::setNumberIterations) ;
+  paramMgr_.addParam("iter count",paramEntry) ;
   return ;
 }
 
-ClpSimplexAPI_ClpLite::~ClpSimplexAPI_ClpLite ()
+CSA_CL::~ClpSimplexAPI_ClpLite ()
 {
   std::string errStr ;
 /*
@@ -92,7 +162,7 @@ ClpSimplexAPI_ClpLite::~ClpSimplexAPI_ClpLite ()
 /*
   Read a problem file in mps format.
 */
-int ClpSimplexAPI_ClpLite::readMps (const char *filename, bool keepNames,
+int CSA_CL::readMps (const char *filename, bool keepNames,
                               bool ignoreErrors)
 {
   std::string errStr ;
@@ -122,7 +192,7 @@ int ClpSimplexAPI_ClpLite::readMps (const char *filename, bool keepNames,
 /*
   Solve a problem
 */
-int ClpSimplexAPI_ClpLite::initialSolve ()
+int CSA_CL::initialSolve ()
 {
   std::string errStr ;
 
@@ -147,60 +217,150 @@ int ClpSimplexAPI_ClpLite::initialSolve ()
 }
 
 
-/* Get / set primal tolerance */
+/* Individual parameter set / get methods */
 
-double ClpSimplexAPI_ClpLite::primalTolerance () const
+double CSA_CL::primalTolerance () const
 {
-  std::string errStr ;
-
-  static rDp0 getPrimalTolerance = nullptr ;
-
-  if (getPrimalTolerance == nullptr) {
-    getPrimalTolerance =
-	libClp_->getFunc<rDp0>("Clp_primalTolerance",errStr) ;
-  }
-  return (getPrimalTolerance(clpC_)) ;
+  return (simpleGetter<Clp_Simplex,double>
+	      (libClp_,clpC_,"Clp_primalTolerance")) ;
+}
+void CSA_CL::setPrimalTolerance (double val)
+{
+  simpleSetter<Clp_Simplex,double>
+      (libClp_,clpC_,"Clp_setPrimalTolerance",val) ;
 }
 
-void ClpSimplexAPI_ClpLite::setPrimalTolerance (double val)
+double CSA_CL::dualTolerance () const
 {
-  std::string errStr ;
-
-  static rpVpD setPrimalTolerance = nullptr ;
-
-  if (setPrimalTolerance == nullptr) {
-    setPrimalTolerance =
-	libClp_->getFunc<rpVpD>("Clp_setPrimalTolerance",errStr) ;
-  }
-  return (setPrimalTolerance(clpC_,val)) ;
+  return (simpleGetter<Clp_Simplex,double>
+	      (libClp_,clpC_,"Clp_dualTolerance")) ;
+}
+void CSA_CL::setDualTolerance (double val)
+{
+  simpleSetter<Clp_Simplex,double>
+      (libClp_,clpC_,"Clp_setDualTolerance",val) ;
 }
 
-/* Get / set dual tolerance */
-
-double ClpSimplexAPI_ClpLite::dualTolerance () const
+double CSA_CL::objSense () const
 {
-  std::string errStr ;
-
-  static rDp0 getDualTolerance = nullptr ;
-
-  if (getDualTolerance == nullptr) {
-    getDualTolerance =
-	libClp_->getFunc<rDp0>("Clp_dualTolerance",errStr) ;
-  }
-  return (getDualTolerance(clpC_)) ;
+  return (simpleGetter<Clp_Simplex,double>
+	      (libClp_,clpC_,"Clp_optimizationDirection")) ;
+}
+void CSA_CL::setObjSense (double val)
+{
+  simpleSetter<Clp_Simplex,double>
+      (libClp_,clpC_,"Clp_setOptimizationDirection",val) ;
 }
 
-void ClpSimplexAPI_ClpLite::setDualTolerance (double val)
+int CSA_CL::numberIterations () const
 {
-  std::string errStr ;
+  return (simpleGetter<Clp_Simplex,int>
+	      (libClp_,clpC_,"Clp_numberIterations")) ;
+}
+void CSA_CL::setNumberIterations (int val)
+{
+  simpleSetter<Clp_Simplex,int>
+      (libClp_,clpC_,"Clp_setNumberIterations",val) ;
+}
 
-  static rpVpD setDualTolerance = nullptr ;
+/*
+  Generic parameter set / get methods
+*/
 
-  if (setDualTolerance == nullptr) {
-    setDualTolerance =
-	libClp_->getFunc<rpVpD>("Clp_setDualTolerance",errStr) ;
+int CSA_CL::getIntParam (std::string name) const
+{
+  return (getMember<Clp_Simplex,int>
+	      (integerSimplexParams,name,libClp_,clpC_)) ;
+}
+double CSA_CL::getDblParam (std::string name) const
+{
+  return (getMember<Clp_Simplex,double>
+	      (doubleSimplexParams,name,libClp_,clpC_)) ;
+}
+std::string CSA_CL::getStrParam (std::string name) const
+{
+  return (getMember<Clp_Simplex,std::string>
+	      (stringSimplexParams,name,libClp_,clpC_)) ;
+}
+
+void CSA_CL::setIntParam (std::string name, int val)
+{
+  setMember<Clp_Simplex,int>
+      (integerSimplexParams,name,libClp_,clpC_,val) ;
+}
+void CSA_CL::setDblParam (std::string name, double val)
+{
+  setMember<Clp_Simplex,double>
+      (doubleSimplexParams,name,libClp_,clpC_,val) ;
+}
+void CSA_CL::setStrParam (std::string name, std::string val)
+{
+  setMember<Clp_Simplex,std::string>
+      (stringSimplexParams,name,libClp_,clpC_,val) ;
+}
+
+/*
+  Methods to work with RunParamsAPI objects.
+*/
+void CSA_CL::exposeParams (RunParamsAPI &runParams) const
+{
+  for (KnownMemberMap::const_iterator iter = integerSimplexParams.begin() ;
+       iter != integerSimplexParams.end() ;
+       iter++) {
+    std::string name = iter->first ;
+    std::string getter = iter->second.getter_ ;
+    int val = simpleGetter<Clp_Simplex,int>(libClp_,clpC_,name) ;
+    runParams.addIntParam(name,val) ;
   }
-  return (setDualTolerance(clpC_,val)) ;
+  for (KnownMemberMap::const_iterator iter = doubleSimplexParams.begin() ;
+       iter != doubleSimplexParams.end() ;
+       iter++) {
+    std::string name = iter->first ;
+    std::string getter = iter->second.getter_ ;
+    double val = simpleGetter<Clp_Simplex,double>(libClp_,clpC_,name) ;
+    runParams.addDblParam(name,val) ;
+  }
+  for (KnownMemberMap::const_iterator iter = stringSimplexParams.begin() ;
+       iter != stringSimplexParams.end() ;
+       iter++) {
+    std::string name = iter->first ;
+    std::string getter = iter->second.getter_ ;
+    std::string val =
+        simpleGetter<Clp_Simplex,std::string>(libClp_,clpC_,name) ;
+    runParams.addStrParam(name,val) ;
+  }
+}
+
+void CSA_CL::loadParams (RunParamsAPI &runParams)
+{
+  std::vector<std::string> paramNames = runParams.getIntParamIds() ;
+  for (std::vector<std::string>::const_iterator iter = paramNames.begin() ;
+       iter != paramNames.end() ;
+       iter++) {
+    std::string name = *iter ;
+    int val = runParams.getIntParam(name) ;
+    std::string setFunc = integerSimplexParams[name].setter_ ;
+    simpleSetter<Clp_Simplex,int>(libClp_,clpC_,setFunc,val) ;
+  }
+  paramNames = runParams.getDblParamIds() ;
+  for (std::vector<std::string>::const_iterator iter = paramNames.begin() ;
+       iter != paramNames.end() ;
+       iter++) {
+    std::string name = *iter ;
+    double val = runParams.getDblParam(name) ;
+    std::string setFunc = doubleSimplexParams[name].setter_ ;
+    simpleSetter<Clp_Simplex,double>(libClp_,clpC_,setFunc,val) ;
+  }
+  paramNames = runParams.getStrParamIds() ;
+  for (std::vector<std::string>::const_iterator iter = paramNames.begin() ;
+       iter != paramNames.end() ;
+       iter++) {
+    std::string name = *iter ;
+    std::string val = runParams.getStrParam(name) ;
+    std::string setFunc = stringSimplexParams[name].setter_ ;
+    simpleSetter<Clp_Simplex,std::string>(libClp_,clpC_,setFunc,val) ;
+  }
 }
 
 }    // end namespace Osi2
+

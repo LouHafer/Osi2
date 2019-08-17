@@ -443,7 +443,7 @@ int PluginManager::loadOneLib (const std::string &libName,
   PreloadMap::const_iterator plmIter = preloadLibs_.find(innatePath) ;
   if (plmIter != preloadLibs_.end()) {
     initFunc = plmIter->second ;
-    fullPath = innatePath ; }  
+    fullPath = innatePath ; }
 /*
   If we didn't turn up an entry in preloadLibs_, this must be an honest
   plugin. Attempt to load the library, then the initFunc.

@@ -60,7 +60,7 @@ RetType simpleGetter (DynamicLibrary *lib, ObjType *obj,
   if (getterFunc != nullptr) {
     return (getterFunc(obj)) ;
   } 
-  return (-1) ;
+  return (RetType()) ;
 }
 
 template <class ObjType, class RetType>
@@ -72,8 +72,12 @@ RetType simpleGetter (DynamicLibrary *lib, ObjType *obj,
     lib->getFunc<FuncSig>(funcName,errStr) ;
   if (getterFunc != nullptr) {
     return (getterFunc(obj,parm1)) ;
+  } else {
+    std::cout
+      << "  simpleGetter: lookup failed for \"" << funcName << "\": "
+      << errStr << std::endl ;
   }
-  return (-1) ;
+  return (RetType()) ;
 }
   
 template <class ObjType, class ValType>
@@ -85,6 +89,10 @@ void simpleSetter (DynamicLibrary *lib, ObjType *obj,
     lib->getFunc<FuncSig>(funcName,errStr) ;
   if (setterFunc != nullptr) {
     setterFunc(obj,val1) ;
+  } else {
+    std::cout
+      << "  simpleSetter(1): lookup failed for \"" << funcName << "\": "
+      << errStr << std::endl ;
   }
 }
 
@@ -97,6 +105,10 @@ void simpleSetter (DynamicLibrary *lib, ObjType *obj,
     lib->getFunc<FuncSig>(funcName,errStr) ;
   if (setterFunc != nullptr) {
     setterFunc(obj,val1,val2) ;
+  } else {
+    std::cout
+      << "  simpleSetter(2): lookup failed for \"" << funcName << "\": "
+      << errStr << std::endl ;
   }
 }
 
@@ -109,6 +121,10 @@ void simpleSetter (DynamicLibrary *lib, ObjType *obj,
     lib->getFunc<FuncSig>(funcName,errStr) ;
   if (setterFunc != nullptr) {
     setterFunc(obj,val1,val2,val3) ;
+  } else {
+    std::cout
+      << "  simpleSetter(3): lookup failed for \"" << funcName << "\": "
+      << errStr << std::endl ;
   }
 }
 
@@ -129,8 +145,8 @@ void simpleSetter (DynamicLibrary *lib, ObjType *obj,
 #define mapEntry3(zzKey,zzGetName,zzSetName) \
 { std::string(zzKey), {std::string(zzGetName),std::string(zzSetName)} }
 
-typedef std::map<std::string,
-	 	 std::pair<std::string,std::string>> KnownMemberMap ;
+struct KMMFuncs { std::string getter_ ; std::string setter_ ; } ;
+typedef std::map<std::string, KMMFuncs> KnownMemberMap ;
 
 
 template <class ObjType, class ValType>
@@ -144,7 +160,7 @@ void setMember (KnownMemberMap membMap, std::string memb,
       << std::endl ;
     return ;
   }
-  std::string setFuncName = pxmIter->second.first ;
+  std::string setFuncName = pxmIter->second.getter_ ;
   simpleSetter<ObjType,ValType>(lib,obj,setFuncName,val) ;
 }
 
@@ -157,9 +173,9 @@ RetType getMember (KnownMemberMap membMap, std::string memb,
     std::cout
       << " Member " << memb << " is not recognised."
       << std::endl ;
-    return (static_cast<RetType>(0)) ;
+    return (RetType()) ;
   }
-  std::string getFuncName = pxmIter->second.second ;
+  std::string getFuncName = pxmIter->second.setter_ ;
   RetType retval = simpleGetter<ObjType,RetType>(lib,obj,getFuncName) ;
   return (retval) ;
 }
