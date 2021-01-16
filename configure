@@ -16828,7 +16828,7 @@ fi
         ;;
       * )
         coin_has_coinutils=yes
-                coinutils_lflags="$withval"
+        coinutils_lflags="$withval"
         ;;
     esac
   fi
@@ -17197,7 +17197,7 @@ fi
         ;;
       * )
         coin_has_sample=yes
-                sample_data="$withval"
+        sample_data="$withval"
         ;;
     esac
   fi
@@ -17410,7 +17410,7 @@ fi
         ;;
       * )
         coin_has_netlib=yes
-                netlib_data="$withval"
+        netlib_data="$withval"
         ;;
     esac
   fi
@@ -17635,7 +17635,7 @@ fi
         ;;
       * )
         coin_has_cxxtest=yes
-                cxxtest_lflags="$withval"
+        cxxtest_lflags="$withval"
         ;;
     esac
   fi
@@ -17946,7 +17946,7 @@ fi
         ;;
       * )
         coin_has_osiclp=yes
-                osiclp_lflags="$withval"
+        osiclp_lflags="$withval"
         ;;
     esac
   fi
@@ -18188,7 +18188,7 @@ fi
         ;;
       * )
         coin_has_osiglpk=yes
-                osiglpk_lflags="$withval"
+        osiglpk_lflags="$withval"
         ;;
     esac
   fi
@@ -18643,7 +18643,7 @@ fi
         ;;
       * )
         coin_has_osi=yes
-                osi_lflags="$withval"
+        osi_lflags="$withval"
         ;;
     esac
   fi
