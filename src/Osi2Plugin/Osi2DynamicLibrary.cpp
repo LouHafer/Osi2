@@ -63,6 +63,9 @@ DynamicLibrary *DynamicLibrary::load (const std::string &name,
 
   handle = ::dlopen(name.c_str(),RTLD_NOW) ;
   if (handle == nullptr) {
+      if (!errorString.empty()) {
+        errorString += "\n" ;
+      }
       errorString += "Failed to load library \"" + name + '"' ;
       const char *zErrorString = ::dlerror() ;
       if (zErrorString)

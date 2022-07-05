@@ -95,13 +95,6 @@ private:
   /// Virtual copy constructor
   RunParamsAPI *clone(RunParamsAPI *rhs)
   { RunParamsAPI_Imp *tmp = dynamic_cast<RunParamsAPI_Imp *>(rhs) ;
-#ifndef NDEBUG
-    if (tmp == nullptr) {
-      std::cout
-        << "  RunParamsAPI_Imp::clone: rhs " << std::hex << rhs << std::dec
-	<< " is not a " << "RunParamsAPI_Imp object." << std::endl ;
-    }
-#endif
     if (tmp != nullptr) {
       return (new RunParamsAPI_Imp(*tmp)) ;
     } else {

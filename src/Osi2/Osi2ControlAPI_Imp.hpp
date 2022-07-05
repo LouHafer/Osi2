@@ -26,7 +26,7 @@ namespace Osi2 {
 
   This class implements the Osi2 Control API (Osi2::ControlAPI).
 */
-class ControlAPI_Imp : public ControlAPI {
+class OSI2LIB_EXPORT ControlAPI_Imp : public ControlAPI {
 
 public:
 

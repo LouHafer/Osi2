@@ -133,37 +133,6 @@ AC_COIN_FINALIZE_FLAGS([UnitTestDeps CxxUnitTestDeps])
 AC_COIN_CHK_HERE(Osi2Lib,[UnitTestDeps CxxUnitTestDeps],osi2)
 
 #############################################################################
-#                            Examples solver                                #
-#############################################################################
-
-# Choose a solver interface that can be used in the examples
-
-if test x$coin_has_glpk = xyes ; then
-  OSI_EXAMPLES_SOLVER_NAME=OsiGlpkSolverInterface
-  OSI_EXAMPLES_SOLVER_CFLAGS="$GLPK_CFLAGS"
-  OSI_EXAMPLES_SOLVER_LIBS="-lOsiGlpk $GLPK_LIBS_INSTALLED"
-  OSI_EXAMPLES_SOLVER_PCNAME=osi-glpk
-fi
-
-AC_SUBST(OSI2_EXAMPLES_SOLVER_NAME)
-AC_SUBST(OSI2_EXAMPLES_SOLVER_CFLAGS)
-AC_SUBST(OSI2_EXAMPLES_SOLVER_LIBS)
-AC_SUBST(OSI2_EXAMPLES_SOLVER_PCNAME)
-
-
-#############################################################################
-#                 Configuration options for individual OSIs                 #
-#############################################################################
-
-# If any of the tests performed in this section actually require the presence
-# of the solver (file presence, link checks, etc.) be sure to guard the call.
-
-# We assume that GLPK is not too old
-
-AC_DEFINE(GLPK_HAS_INTOPT, [1],
-	  [Define to 1 if GLPK has the advanced B&B solver lpx_intopt])
-
-#############################################################################
 #                  Check for doxygen                                        #
 #############################################################################
 

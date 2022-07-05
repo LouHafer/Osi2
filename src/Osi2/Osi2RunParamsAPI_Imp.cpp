@@ -36,10 +36,6 @@ static Osi2::RunParamsAPI_Imp regObj(Osi2::RunParamsAPI::getAPIIDString()) ;
 static void *create (const Osi2::ObjectParams *params)
 {
   std::string what = reinterpret_cast<const char *>(params->apiStr_) ;
-#ifndef NDEBUG
-  std::cout
-    << "RunParams create: " << what << " API requested." << std::endl ;
-#endif
   void *retval = nullptr ;
   if (what == Osi2::RunParamsAPI::getAPIIDString()) {
     retval = new Osi2::RunParamsAPI_Imp() ;
@@ -55,10 +51,6 @@ static int destroy (void *victim, const Osi2::ObjectParams *objParms)
 {
   std::string what = reinterpret_cast<const char *>(objParms->apiStr_) ;
   int retval = 1 ;
-#ifndef NDEBUG
-  std::cout
-    << "RunParams destroy: " << what << " API requested." << std::endl ;
-#endif
   if (what == Osi2::RunParamsAPI::getAPIIDString()) {
     Osi2::API *api = static_cast<Osi2::API *>(victim) ;
     delete api ;
@@ -73,9 +65,6 @@ static int destroy (void *victim, const Osi2::ObjectParams *objParms)
 */
 static int cleanup (const Osi2::PlatformServices *services)
 {
-#ifndef NDEBUG
-  std::cout << "Executing RunParams plugin cleanup." << std::endl ;
-#endif
   return (0) ;
 }
 
@@ -85,11 +74,6 @@ static int cleanup (const Osi2::PlatformServices *services)
 */
 static Osi2::ExitFunc initPlugin (Osi2::PlatformServices *services)
 {
-#ifndef NDEBUG
-  std::cout
-    << "Executing initialisation for RunParams plugin." << std::endl ;
-#endif
-
   services->ctrlObj_ = nullptr ;
 /*
   Register our API.
@@ -106,11 +90,8 @@ static Osi2::ExitFunc initPlugin (Osi2::PlatformServices *services)
   int retval =
     services->registerAPI_(reinterpret_cast<const Osi2::CharString *>(apiName),
     			   &reginfo) ;
-  if (retval < 0) {
-    std::cout
-        << "Apparent failure to register" << apiName << "API." << std::endl ;
-    return (nullptr) ;
-  }
+
+  if (retval < 0) { return (nullptr) ; }
 
   return (cleanup) ;
 }
@@ -140,19 +121,9 @@ RunParamsAPI_Imp::RunParamsAPI_Imp ()
 */
 RunParamsAPI_Imp::RunParamsAPI_Imp (std::string name)
 {
-#ifndef NDEBUG
-  std::cout
-    << "    executing registration constructor for innate plugin "
-    << name << "." << std::endl ;
-#endif
   PluginManager *pluginMgr = &PluginManager::getInstance() ;
 
   pluginMgr->addPreloadLib(name,initPlugin) ;
-
-#ifndef NDEBUG
-  std::cout
-    << "    registered innate plugin " << name << "." << std::endl ;
-#endif
 }
 
 RunParamsAPI_Imp::~RunParamsAPI_Imp ()
@@ -174,15 +145,6 @@ template <class ParamType>
 void RunParamsAPI_Imp::addParam (ParamMap<ParamType> &paramMap,
 			    std::string id, ParamType val)
 {
-#ifndef NDEBUG
-  typename ParamMap<ParamType>::iterator paramIter ;
-  paramIter = paramMap.find(id) ;
-  if (paramIter != paramMap.end()) {
-    std::cout
-      << "    RunParamsAPI_Imp::addParam: param " << id
-      << " already present." << std::endl ;
-  }
-#endif
   paramMap[id] = val ;
   return ;
 }
@@ -193,13 +155,6 @@ void RunParamsAPI_Imp::setParam (ParamMap<ParamType> &paramMap,
 {
   typename ParamMap<ParamType>::iterator paramIter ;
   paramIter = paramMap.find(id) ;
-#ifndef NDEBUG
-  if (paramIter == paramMap.end()) {
-    std::cout
-      << "    RunParamsAPI_Imp::setParam: param " << id
-      << " not present." << std::endl ;
-  }
-#endif
   if (paramIter != paramMap.end()) {
     paramIter->second = val ;
   }
@@ -212,13 +167,6 @@ ParamType RunParamsAPI_Imp::getParam (const ParamMap<ParamType> &paramMap,
 {
   typename ParamMap<ParamType>::const_iterator paramIter ;
   paramIter = paramMap.find(id) ;
-#ifndef NDEBUG
-  if (paramIter == paramMap.end()) {
-    std::cout
-      << "    RunParamsAPI_Imp::getParam: param " << id
-      << " not present." << std::endl ;
-  }
-#endif
   if (paramIter != paramMap.end()) {
     return (paramIter->second) ;
   } else {

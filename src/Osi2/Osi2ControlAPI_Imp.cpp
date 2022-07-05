@@ -203,7 +203,7 @@ int ControlAPI_Imp::load (const std::string &shortName,
   if (knownIter != knownLibMap_.end()) return (1) ;
 /*
   Not already loaded. Construct a full path and ask the plugin manager
-  to load the solver.
+  to load the plugin.
 */
   std::string fullPath = libName ;
   PluginUniqueID uniqueID ;
@@ -221,12 +221,13 @@ int ControlAPI_Imp::load (const std::string &shortName,
   }
 /*
   Return value of 1 means PluginManager thinks the library is already
-  loaded. Internal confusion: we should have had a known libraries map
-  entry.
+  loaded. Not necessarily an error, if the plugin was loaded by some previous
+  ControlAPI object and not unloaded.
 */
   if (retval == 1) {
-    msgHandler_->message(CTRLAPI_UNREG, msgs_)
-	<< fullPath << shortName << CoinMessageEol ;
+    msgHandler_->message(CTRLAPI_UNREG, msgs_) ;
+    msgHandler_->printing(true) << fullPath ;
+    msgHandler_->printing(true) << shortName << CoinMessageEol ;
   }
 /*
   Success. Create and initialize an entry in the known libraries map.

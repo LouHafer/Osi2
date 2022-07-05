@@ -263,7 +263,6 @@ public:
     /// Wrapper to invoke the get method from the client class
     bool get (Client *obj, void *&blob)
     {
-      std::cout << "    invoking derived get." << std::endl ;
       ValType *val = static_cast<ValType *>(blob) ;
       *val = (obj->*getFunc_)() ;
       return (true) ;
@@ -272,7 +271,6 @@ public:
     /// Wrapper to invoke the set method from the client class
     bool set (Client *obj, const void *&blob)
     {
-      std::cout << "    invoking derived set." << std::endl ;
       const ValType *val = static_cast<const ValType *>(blob) ;
       (obj->*setFunc_)(*val) ;
       return (true) ;
@@ -332,7 +330,6 @@ public:
     /// Wrapper to invoke the get method from the client class
     bool get (Client *obj, void *&blob)
     {
-      std::cout << "    invoking derived get." << std::endl ;
       ValType *val = static_cast<ValType *>(blob) ;
       *val = (obj->*getFunc_)(what_) ;
       return (true) ;
@@ -341,7 +338,6 @@ public:
     /// Wrapper to invoke the set method from the client class
     bool set (Client *obj, const void *&blob)
     {
-      std::cout << "    invoking derived set." << std::endl ;
       const ValType *val = static_cast<const ValType *>(blob) ;
       (obj->*setFunc_)(what_,*val) ;
       return (true) ;
@@ -399,7 +395,6 @@ public:
     /// Wrapper to invoke the get method from the client class
     bool get (Client *obj, void *&blob)
     {
-      std::cout << "    invoking derived get." << std::endl ;
       (obj->*getFunc_)(blob) ;
       return (true) ;
     }
@@ -407,7 +402,6 @@ public:
     /// Wrapper to invoke the set method from the client class
     bool set (Client *obj, const void *&blob)
     {
-      std::cout << "    invoking derived set." << std::endl ;
       (obj->*setFunc_)(blob) ;
       return (true) ;
     }

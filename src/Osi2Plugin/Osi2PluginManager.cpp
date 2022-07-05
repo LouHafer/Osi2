@@ -16,12 +16,6 @@
 
 #include "CoinHelperFunctions.hpp"
 
-/*
-  #include "Osi2Directory.hpp"
-  #include "Osi2Path.hpp"
-*/
-#include "Osi2Config.h"
-#include "Osi2nullptr.hpp"
 #include "Osi2PluginManager.hpp"
 #include "Osi2DynamicLibrary.hpp"
 #include "Osi2ObjectAdapter.hpp"
@@ -366,7 +360,6 @@ PluginManager::apiEntryExists (const APIRegMap &regMap,
       See if we find anything. If we have a hit, iterPair.first->first will be
       the key we're looking for; otherwise, we've struck out.
     */
-    std::cout << "apiEntryExists: checking for " << key << std::endl ;
     std::pair<RMCI, RMCI> iterPair = regMap.equal_range(key) ;
     if (iterPair.first->first != key) return (regMap.end()) ;
     /*
@@ -520,12 +513,12 @@ int PluginManager::loadOneLib (const std::string &libName,
   std::vector<std::string> plugDirs ;
   std::string pluginPath ;
   std::string innatePath ;
-  std::string fullPath ;
+  std::string fullPath = "" ;
   char dirSep = CoinFindDirSeparator() ;
 
   if (dir == nullptr || (dir->compare("") == 0)) {
     plugDirs = getPluginDirs() ;
-    innatePath = getInnateDir() + dirSep + libName ;
+    innatePath = getInnateDir() ;
   } else {
     plugDirs.push_back(*dir) ;
     innatePath = "" ;
@@ -534,63 +527,67 @@ int PluginManager::loadOneLib (const std::string &libName,
   Is this library already loaded? If so, don't do it again.
 */
   bool foundIt = false ;
+  LibPathToIDMap::iterator thisLib ;
   for (std::vector<std::string>::const_iterator iter = plugDirs.cbegin() ;
        iter != plugDirs.cend() && !foundIt ;
        iter++) {
     pluginPath = *iter+dirSep+libName ;
     if (libPathToIDMap_.find(pluginPath) != libPathToIDMap_.end()) {
       foundIt = true ;
+      thisLib = libPathToIDMap_.find(pluginPath) ;
       fullPath = pluginPath ;
     }
   }
   if (!foundIt && innatePath != "") {
-    if (libPathToIDMap_.find(innatePath) != libPathToIDMap_.end()) {
+    pluginPath = innatePath+dirSep+libName ;
+    if (libPathToIDMap_.find(pluginPath) != libPathToIDMap_.end()) {
       foundIt = true ;
-      fullPath = innatePath ;
+      thisLib = libPathToIDMap_.find(pluginPath) ;
+      fullPath = pluginPath ;
     }
   }
   if (foundIt) {
     msgHandler_->message(PLUGMGR_LIBLDDUP, msgs_)
 	<< fullPath << CoinMessageEol ;
+    if (uniqueID != 0) { *uniqueID = thisLib->second ; }
     return (1) ; }
 /*
-  Is this an innate library? If so, innatePath should show up in the map of
-  preregistered initFuncs. (And if not, there's nothing we can do if it really
-  is an innate library.)
+  The library isn't loaded. Look for an honest plugin first (so that the user
+  can override an innate plugin if they choose). If we don't find one, try for
+  an innate plugin if we can.
 */
   DynamicLibrary *dynLib = nullptr ;
   InitFunc initFunc = nullptr ;
   std::string errStr ;
 
-  PreloadMap::const_iterator plmIter = preloadLibs_.find(innatePath) ;
-  if (plmIter != preloadLibs_.end()) {
-    initFunc = plmIter->second ;
-    fullPath = innatePath ; }
-/*
-  If we didn't turn up an entry in preloadLibs_, this must be an honest
-  plugin. Attempt to load the library, then the initFunc.
-*/
-  if (initFunc == nullptr) {
-    for (std::vector<std::string>::const_iterator iter = plugDirs.cbegin() ;
-	 iter != plugDirs.cend() && dynLib == nullptr ;
-	 iter++) { 
-      pluginPath = *iter+dirSep+libName ;
-      dynLib = DynamicLibrary::load(pluginPath, errStr) ;
-    }
-    if (dynLib == nullptr) {
-      msgHandler_->message(PLUGMGR_LIBLDFAIL, msgs_)
-	  << pluginPath << errStr << CoinMessageEol ;
-      return (-1) ;
-    }
+  for (std::vector<std::string>::const_iterator iter = plugDirs.cbegin() ;
+       iter != plugDirs.cend() && dynLib == nullptr ;
+       iter++) { 
+    pluginPath = *iter+dirSep+libName ;
+    dynLib = DynamicLibrary::load(pluginPath, errStr) ;
+  }
+  if (dynLib != nullptr) {
     fullPath = pluginPath ;
     initFunc = dynLib->getFunc<InitFunc>("initPlugin",errStr) ;
+  } else if (innatePath != "") {
+    pluginPath = innatePath+dirSep+libName ;
+    PreloadMap::const_iterator plmIter = preloadLibs_.find(pluginPath) ;
+    if (plmIter != preloadLibs_.end()) {
+      fullPath = pluginPath ;
+      initFunc = plmIter->second ;
+    }
   }
 /*
-  No initFunc. We can't proceed.
+  Check for errors: no library or no init function.
 */
+  if (fullPath == "") {
+    msgHandler_->message(PLUGMGR_LIBLDFAIL, msgs_)
+	<< libName << errStr << CoinMessageEol ;
+    return (-1) ;
+  }
   if (initFunc == nullptr) {
     msgHandler_->message(PLUGMGR_SYMLDFAIL, msgs_)
-	<< "function" << "initPlugin" << libName << errStr
+	<< "function" << "initPlugin" << fullPath << errStr
 	<< CoinMessageEol ;
     return (-2) ;
   }
@@ -785,8 +782,8 @@ int PluginManager::unloadOneLib (const std::string &libName,
       << fullPath << CoinMessageEol ;
   }
 /*
-  If this is an actual dynamic library, unload the library. Then remove
-  the map entry.
+  If this is an actual dynamic library, unload the library via the
+  destructor. Then remove the map entry.
 */
   if (lib.isDynamic_) {
     msgHandler_->message(PLUGMGR_LIBCLOSE, msgs_)

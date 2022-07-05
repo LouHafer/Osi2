@@ -57,8 +57,7 @@ static OneCtrlAPIMessage us_english[] = {
     // Warning: 3000 -- 5999
 
     { CTRLAPI_LIBUNREG, 3000, 4, "Library \"%s\" is not registered." },
-    {
-        CTRLAPI_UNREG, 3001, 4,
+    { CTRLAPI_UNREG, 3001, 4,
         "%?PluginManager says \"%s\" already loaded but %?\"%s\" is not registered."
     },
 

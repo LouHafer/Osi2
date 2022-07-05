@@ -2,8 +2,6 @@
   Copyright 2011 Lou Hafer, Matt Saltzman
   This code is licensed under the terms of the Eclipse Public License (EPL)
 
-  $Id$
-
   Include file for the configuration of Osi2.
   
   On systems where the code is configured with the configure script
@@ -32,24 +30,47 @@
 
 #ifdef HAVE_CONFIG_H
 
-/*
-  Config.h is appropriate if you're building Osi2. Config_osi2.h is
-  appropriate if you're using Osi2.
-*/
-#ifdef OSI2_BUILD
-#include "config.h"
-#else
-#include "config_osi2.h"
-#endif
+#  ifdef OSI2_BUILD
+#    include "config.h"
+#    ifdef OSI2LIB_EXPORT
+#      undef OSI2LIB_EXPORT
+#    endif
+#    ifdef DLL_EXPORT
+#      define OSI2LIB_EXPORT __declspec(dllexport)
+#    elif defined(__GNUC__) && __GNUC__ >= 4
+#      define OSI2LIB_EXPORT __attribute__((__visibility__("default")))
+#    else
+#      define OSI2LIB_EXPORT
+#    endif
+#  else /* OSI2_BUILD */
+#    include "config_osi2.h"
+#  endif
 
 #else /* HAVE_CONFIG_H */
 
-#ifdef OSI2_BUILD
-#include "config_default.h"
-#else
-#include "config_osi2_default.h"
-#endif
+#  ifndef OSI2LIB_EXPORT
+#    if defined(_WIN32) && defined(DLL_EXPORT)
+#      ifdef OSI2_BUILD
+#        define OSI2LIB_EXPORT __declspec(dllexport)
+#      else
+#        define OSI2LIB_EXPORT __declspec(dllimport)
+#      endif
+#    elif defined(__GNUC__) && __GNUC__ >= 4
+#      ifdef OSI2_BUILD
+#        define OSI2LIB_EXPORT __attribute__((__visibility__("default")))
+#      else
+#        define OSI2LIB_EXPORT
+#      endif
+#    else
+#      define OSI2LIB_EXPORT
+#    endif
+#  endif
+#  ifdef OSI2LIB_BUILD
+#    include "config_default.h"
+#  else
+#    include "config_osi2_default.h"
+#  endif
 
 #endif /* HAVE_CONFIG_H */
 
-#endif
+#endif  /* Osi2Config_H */

@@ -2,8 +2,6 @@
   Copyright 2019 Lou Hafer, Matt Saltzman
   This code is licensed under the terms of the Eclipse Public License (EPL)
 
-  $Id$
-
   This file contains the implementation of the methods for the Osi2 Parameter
   Managememt API.
 */
@@ -31,7 +29,6 @@ Osi2::ParamMgmtAPI_Imp regInstance("ParamMgmt") ;
 */
 static int32_t cleanupPlugin (const Osi2::PlatformServices *services)
 {
-  std::cout << "Executing Osi2ParamMgmt_Imp::cleanupPlugin." << std::endl ;
   return (0) ;
 }
 
@@ -41,8 +38,6 @@ static int32_t cleanupPlugin (const Osi2::PlatformServices *services)
 
 static Osi2::ExitFunc initPlugin (Osi2::PlatformServices *services)
 {
-  std::cout << "Executing Osi2ParamMgmt_Imp::initPlugin" << std::endl ;
-
   return (cleanupPlugin) ;
 }
 

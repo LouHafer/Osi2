@@ -10,6 +10,7 @@
 # define Osi2ParamBEAPIMessages_HPP
 
 #include "CoinMessageHandler.hpp"
+#include "Osi2Config.h"
 
 namespace Osi2 {
 
@@ -33,7 +34,7 @@ enum ParamBEAPIMsg {
 
   See CoinMessageHandler for usage.
 */
-class ParamBEAPIMessages : public CoinMessages {
+class OSI2LIB_EXPORT ParamBEAPIMessages : public CoinMessages {
 
 public:
 

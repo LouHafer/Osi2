@@ -26,7 +26,7 @@ namespace Osi2 {
 
   This class implements the Osi2::ParamMgmt API.
 */
-class ParamMgmtAPI_Imp : public ParamMgmtAPI {
+class OSI2LIB_EXPORT ParamMgmtAPI_Imp : public ParamMgmtAPI {
 
 public:
 

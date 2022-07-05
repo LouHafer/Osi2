@@ -42,7 +42,6 @@ void ParamBEAPI_Imp<Client>::addParam (const char *paramID,
 template<class Client>
 bool ParamBEAPI_Imp<Client>::get (const char *paramID, void *&blob)
 {
-  std::cout << "  Request to get parameter " << paramID << std::endl ;
   ParamEntry *paramEntry = entryForParam_[paramID] ;
   paramEntry->get(client_,blob) ;
   return (true) ;
@@ -55,7 +54,6 @@ bool ParamBEAPI_Imp<Client>::get (const char *paramID, void *&blob)
 template<class Client>
 bool ParamBEAPI_Imp<Client>::set (const char *paramID, const void *&blob)
 {
-  std::cout << "  Request to set parameter " << paramID << std::endl ;
   ParamEntry *paramEntry = entryForParam_[paramID] ;
   paramEntry->set(client_,blob) ;
   return (true) ;

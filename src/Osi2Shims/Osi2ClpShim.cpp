@@ -94,7 +94,8 @@ int32_t ClpShim::destroy (void *victim, const ObjectParams *objParms)
   Plugin cleanup method. Does whatever is needed to clean up after the plugin
   prior to unloading the library.
 */
-extern "C" int32_t cleanupPlugin (const PlatformServices *services)
+extern "C"
+int32_t cleanupPlugin (const PlatformServices *services)
 {
   std::cout << "Executing ClpShim cleanupPlugin." << std::endl ;
     return (0) ;
@@ -105,7 +106,7 @@ extern "C" int32_t cleanupPlugin (const PlatformServices *services)
   Once that's done, register the APIs we provide.  The return value is the
   exit method to be called before the plugin is unloaded.
 */
-extern "C"
+extern "C" OSI2LIB_EXPORT
 ExitFunc initPlugin (PlatformServices *services)
 {
   std::string version = CLP_VERSION ;

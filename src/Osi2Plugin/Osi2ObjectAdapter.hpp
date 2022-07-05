@@ -44,9 +44,9 @@ struct ObjectAdapter : public IObjectAdapter {
   of a method that takes a void *object and a DestroyFunc. This is it.
 */
 
-struct DummyAdapter : public IObjectAdapter { virtual void *adapt(void
-    *object, DestroyFunc df) {
-        return (static_cast<void*>(0)) ; }
+struct DummyAdapter : public IObjectAdapter {
+  virtual void *adapt(void *object, DestroyFunc df)
+  { return (static_cast<void*>(0)) ; }
 } ;
 
 }  // end namespace Osi2

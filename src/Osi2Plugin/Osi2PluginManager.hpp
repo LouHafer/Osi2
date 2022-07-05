@@ -17,6 +17,8 @@
 
 #include <vector>
 #include <map>
+#include "Osi2Config.h"
+#include "Osi2nullptr.hpp"
 #include "Osi2PlugMgrMessages.hpp"
 #include "Osi2Plugin.hpp"
 
@@ -68,17 +70,17 @@ struct IObjectAdapter ;
   a request that the object be supplied by a particular library.
 
   To allow Osi2 to provide utility APIs through compiled-in `plugin
-  libraries'.  The PluginManager class provides a hook, #addPreloadLib, to
+  libraries', the PluginManager class provides a hook, #addPreloadLib, to
   allow these `plugins' to register their APIs. The expected technique is
   for the file defining the class to instantiate a single file-local static
   object using a constructor whose main purpose is to invoke #addPreloadLib
   with the library's name and \link Osi2::InitFunc initialisation function
   \endlink as parameters. Note that this special-purpose constructor must
-  invoke #getInstance to insure that an instance of the PluginManager has been
-  created.
+  invoke #getInstance to insure that an instance of the PluginManager has
+  been created.
 */
 
-class PluginManager {
+class OSI2LIB_EXPORT PluginManager {
 
 public:
 

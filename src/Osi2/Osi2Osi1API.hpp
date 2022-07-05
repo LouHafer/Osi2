@@ -57,7 +57,14 @@ class Osi1API : public API  {
 public:
 
   /// Return the "ident" string for the OSI1 %API.
-  inline static const char *getAPIIDString () { return ("OSI1API") ; }
+  inline static const char *getAPIIDString () { return ("Osi1API") ; }
+
+  /// API capability
+  inline int getAPIs(const char **&idents) {
+    apiName_ = getAPIIDString() ;
+    idents = &apiName_ ;
+    return (1) ;
+  }
 
   /*! \brief Nested class for returning status from the applyCuts method.
 
@@ -1813,6 +1820,11 @@ public:
   /*! \brief We need this for covariant return */
   virtual ApplyCutsReturnCode applyCutsPrivate(const OsiCuts & cs,
 					  double effectivenessLb = 0.0) = 0 ;
+
+  private:
+
+  /// Intermediate variable for returning the API name
+  const char *apiName_ ;
 };
 
 }  // end namespace Osi2

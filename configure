@@ -679,10 +679,6 @@ coin_doxy_tagname
 coin_doxy_usedot
 coin_have_latex
 coin_have_doxygen
-OSI2_EXAMPLES_SOLVER_PCNAME
-OSI2_EXAMPLES_SOLVER_LIBS
-OSI2_EXAMPLES_SOLVER_CFLAGS
-OSI2_EXAMPLES_SOLVER_NAME
 CXXUNITTESTDEPS_CFLAGS_NOPC
 CXXUNITTESTDEPS_LFLAGS_NOPC
 UNITTESTDEPS_CFLAGS_NOPC
@@ -19809,38 +19805,6 @@ printf "%s\n" "$as_me: CXXUNITTESTDEPS_LFLAGS: \"${CXXUNITTESTDEPS_LFLAGS}\"" >&
 printf "%s\n" "$as_me: CXXUNITTESTDEPS_CFLAGS: \"${CXXUNITTESTDEPS_CFLAGS}\"" >&6;}
        fi
 
-
-
-#############################################################################
-#                            Examples solver                                #
-#############################################################################
-
-# Choose a solver interface that can be used in the examples
-
-if test x$coin_has_glpk = xyes ; then
-  OSI_EXAMPLES_SOLVER_NAME=OsiGlpkSolverInterface
-  OSI_EXAMPLES_SOLVER_CFLAGS="$GLPK_CFLAGS"
-  OSI_EXAMPLES_SOLVER_LIBS="-lOsiGlpk $GLPK_LIBS_INSTALLED"
-  OSI_EXAMPLES_SOLVER_PCNAME=osi-glpk
-fi
-
-
-
-
-
-
-
-#############################################################################
-#                 Configuration options for individual OSIs                 #
-#############################################################################
-
-# If any of the tests performed in this section actually require the presence
-# of the solver (file presence, link checks, etc.) be sure to guard the call.
-
-# We assume that GLPK is not too old
-
-
-printf "%s\n" "#define GLPK_HAS_INTOPT 1" >>confdefs.h
 
 
 #############################################################################

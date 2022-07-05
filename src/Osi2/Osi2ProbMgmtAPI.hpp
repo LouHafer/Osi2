@@ -20,6 +20,9 @@ class ProbMgmtAPI : public API {
 
 public:
 
+  /// Return the "ident" string for the ProbMgmt %API.
+  inline static const char *getAPIIDString () { return ("ProbMgmtAPI") ; }
+
   /// Virtual destructor
   virtual ~ProbMgmtAPI() {}
 
@@ -30,6 +33,18 @@ public:
 
   /// Solve an lp
   virtual int initialSolve() = 0 ;
+
+  /// API capability
+  inline int getAPIs(const char **&idents) {
+    apiName_ = getAPIIDString() ;
+    idents = &apiName_ ;
+    return (1) ;
+  }
+
+private:
+
+  /// Intermediate storage for returning the API name
+  const char *apiName_ ;
 
 } ;
 

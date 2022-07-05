@@ -57,7 +57,9 @@ namespace {
   already be loaded.
 
   Over time, this test should be expanded and broken out into a separate file.
-  Arguably, it should be a separate executable.
+  Arguably, it should be a separate executable. Arguably, there should be a
+  completely special-purpose Osi2TestShim plugin that can be tweaked to test
+  error handling paths.
 */
 int testPluginManager ()
 {
@@ -112,6 +114,10 @@ int testPluginManager ()
   std::string uninstDir = "../src/Osi2Shims/.libs" ;
   std::string dfltDirs = plugMgr.getPluginDirsStr() ;
   dfltDirs = badDir+':'+uninstDir+':'+dfltDirs ;
+
+  std::cout
+    << "Shim search path for testing:" << std::endl
+    << "    " << dfltDirs << std::endl ;
 
   plugMgr.setPluginDirsStr(dfltDirs) ;
   retval = plugMgr.loadOneLib(libName) ;
@@ -326,7 +332,8 @@ int testControlAPI (const std::string &shortName,
   } else {
     apiObjs.push_back(apiObj) ;
     ProbMgmtAPI *clp = dynamic_cast<ProbMgmtAPI *>(apiObj) ;
-    clp->readMps("exmip1.mps",true) ;
+    std::string exmip1Path = dfltSampleDir+dirSep+"brandy.mps" ;
+    clp->readMps(exmip1Path.c_str(),true) ;
   }
 /*
   Now destroy all the objects.
@@ -335,11 +342,16 @@ int testControlAPI (const std::string &shortName,
        iter != apiObjs.end() ;
        iter++) {
     API *apiObj = *iter ;
+    const char **apiName = nullptr ;
+    int apiCnt = apiObj->getAPIs(apiName) ;
+    if (apiCnt > 0)
+    { std::cout
+        << "Destroying object implementing API " << *apiName << std::endl ; }
     int retval = ctrlAPI.destroyObject(apiObj) ;
     if (retval < 0) {
       errcnt++ ;
       std::cout
-	<< "Apparent failure to destroy a ProbMgmt object." << std::endl ;
+        << "Apparent failure to destroy the object" << std::endl ;
     }
   }
   apiObjs.clear() ;
@@ -446,6 +458,27 @@ int testParamMgmtAPI (std::string sampleDir)
   {
     std::string blob ;
     const char *paramID = "DfltPlugDir" ;
+    if (mgmtAPI.get(ctrlAPI1ID,paramID,&blob))
+    { std::cout
+	<< "The value of " << ctrlAPI1ID << ":" << paramID
+	<< " is " << blob << std::endl ;
+    } else {
+      std::cout
+	<< "Failed to get the value of " << ctrlAPI1ID << ":" << paramID
+	<< std::endl ;
+    }
+  /*
+    Attempt to set the parameter and retrieve it again.
+  */
+    blob = "../src/Osi2Shims/.libs" ;
+    std::cout
+      << "Attempting to set " << paramID << " to " << blob << "."
+      << std::endl ;
+    if (!mgmtAPI.set(ctrlAPI1ID,paramID,&blob)) {
+      std::cout
+	<< "Failed to set the value of " << ctrlAPI1ID << ":" << paramID
+	<< std::endl ;
+    }
     if (mgmtAPI.get(ctrlAPI1ID,paramID,&blob))
     { std::cout
 	<< "The value of " << ctrlAPI1ID << ":" << paramID
@@ -567,6 +600,22 @@ int testRunParamsAPI (std::string netlibDir)
   }
   RunParamsAPI *rpObj = dynamic_cast<RunParamsAPI *>(apiObj) ;
 /*
+  Load the Clp (lite) plugin. This may well be loaded already from previous
+  tests (ParamMgmt, for example, which loads it but doesn't unload it. But
+  because we're working with a fresh ControlAPI object there will be no record
+  of it.
+*/
+  std::string shortName = "Clp" ;
+  retval = ctrlAPI.load(shortName) ;
+  if (retval < 0) {
+    errCnt++ ;
+    std::cout
+      << "Apparent failure to load " << shortName << "." << std::endl ;
+    std::cout
+      << "Error code is " << retval << "." << std::endl ;
+    return (errCnt) ;
+  }
+/*
   Instantiate a ClpSimplex API object.
 */
   apiObj = nullptr ;
@@ -671,37 +720,37 @@ int main(int argC,char* argV[])
 /*
   Construct the location of installed data files.
 */
-  PluginManager &plugMgr = PluginManager::getInstance() ;
-#if 0
-  std::string dataDir = plugMgr.getDfltPluginDir() ;
-  char dirSep = CoinFindDirSeparator() ;
-  std::string::size_type lastSep = dataDir.rfind(dirSep) ;
-  dataDir = dataDir.substr(0,lastSep) ;
-  dataDir = dataDir+dirSep+"share" ;
-  std::cout << "dataDir is " << dataDir << std::endl << std::endl ;
-  std::string sampleDir = dataDir+dirSep+"coin-or-sample" ;
-  std::string netlibDir = dataDir+dirSep+"coin-or-netlib" ;
-#endif
   std::string sampleDir = SAMPLEDATADIR ;
   std::string netlibDir = NETLIBDATADIR ;
+  std::cout << "coin-or-sample is at " << sampleDir << std::endl ;
+  std::cout << "coin-or-netlib is at " << netlibDir << std::endl << std::endl ;
 /*
-  Now let's try the Osi2 control API. This test will try to create
-  ProbMgmt and Osi1 API objects in unrestricted mode (i.e., without
-  restriction to a particular library), followed by a ProbMgmt object in
-  restricted mode. Clp(Lite) doesn't support either one. ClpHeavy supports
-  both. GlpkHeavy supports only Osi1.
+  Grab the plugin manager instance.
+*/
+  PluginManager &plugMgr = PluginManager::getInstance() ;
+/*
+  Construct a vector of shims for testing, then open a loop to test each shim.
 */
   int totalErrs = 0 ;
   typedef std::pair<std::string,int> TestVec ;
   std::vector<TestVec> solvers ;
   solvers.push_back(TestVec("clp",3)) ;
+# ifdef OSI2_HAS_OSICLP
   solvers.push_back(TestVec("clpHeavy",0)) ;
-# ifdef COIN_HAS_OSIGLPK
+# endif
+# ifdef OSI2_HAS_OSIGLPK
   solvers.push_back(TestVec("glpkHeavy",2)) ;
 # endif
   std::vector<TestVec>::const_iterator iter ;
   for (iter = solvers.begin() ; iter != solvers.end() ; iter++) {
     std::string solverName = iter->first ;
+/*
+  First test the Osi2 control API. This test will try to create
+  ProbMgmt and Osi1 API objects in unrestricted mode (i.e., without
+  restriction to a particular library), followed by a ProbMgmt object in
+  restricted mode. Clp(Lite) doesn't support either one. ClpHeavy supports
+  both. GlpkHeavy supports only Osi1.
+*/
     std::cout
       << "Testing ControlAPI (" << solverName << ")." << std::endl ;
     retval = testControlAPI(solverName,sampleDir) ;

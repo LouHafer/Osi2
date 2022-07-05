@@ -15,6 +15,7 @@
 */
 
 #include <string>
+#include "Osi2Config.h"
 
 namespace Osi2 {
 
@@ -41,7 +42,7 @@ namespace Osi2 {
   Doxygen's builtin notion of grouping gets in the way here. What you see is a
   compromise.  -- lh, 110912 --
 */
-class DynamicLibrary {
+class OSI2LIB_EXPORT DynamicLibrary {
 
 public:
 

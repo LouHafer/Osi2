@@ -87,7 +87,7 @@ int32_t ClpHeavyShim::destroy (void *victim, const ObjectParams *objParms)
   (supplied in the services parameter). The return value is the exit method
   to be called before the plugin is unloaded.
 */
-extern "C"
+extern "C" OSI2LIB_EXPORT
 ExitFunc initPlugin (PlatformServices *services)
 {
   std::string version = CLP_VERSION ;
