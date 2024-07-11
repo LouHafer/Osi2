@@ -784,22 +784,22 @@ case $basic_machine in
 		vendor=hp
 		;;
 	i*86v32)
-		cpu=`echo "$1" | sed -e 's/86.*/86/'`
+		cpu=$(echo "$1" | sed -e 's/86.*/86/')
 		vendor=pc
 		basic_os=sysv32
 		;;
 	i*86v4*)
-		cpu=`echo "$1" | sed -e 's/86.*/86/'`
+		cpu=$(echo "$1" | sed -e 's/86.*/86/')
 		vendor=pc
 		basic_os=sysv4
 		;;
 	i*86v)
-		cpu=`echo "$1" | sed -e 's/86.*/86/'`
+		cpu=$(echo "$1" | sed -e 's/86.*/86/')
 		vendor=pc
 		basic_os=sysv
 		;;
 	i*86sol2)
-		cpu=`echo "$1" | sed -e 's/86.*/86/'`
+		cpu=$(echo "$1" | sed -e 's/86.*/86/')
 		vendor=pc
 		basic_os=solaris2
 		;;
@@ -932,7 +932,7 @@ case $basic_machine in
 		;;
 	leon-*|leon[3-9]-*)
 		cpu=sparc
-		vendor=`echo "$basic_machine" | sed 's/-.*//'`
+		vendor=$(echo "$basic_machine" | sed 's/-.*//')
 		;;
 
 	*-*)
@@ -1101,7 +1101,7 @@ case $cpu-$vendor in
 		cpu=mipsisa64sb1el
 		;;
 	sh5e[lb]-*)
-		cpu=`echo "$cpu" | sed 's/^\(sh.\)e\(.\)$/\1\2e/'`
+		cpu=$(echo "$cpu" | sed 's/^\(sh.\)e\(.\)$/\1\2e/')
 		;;
 	spur-*)
 		cpu=spur
@@ -1119,7 +1119,10 @@ case $cpu-$vendor in
 		cpu=x86_64
 		;;
 	xscale-* | xscalee[bl]-*)
-		cpu=`echo "$cpu" | sed 's/^xscale/arm/'`
+		cpu=$(echo "$cpu" | sed 's/^xscale/arm/')
+		;;
+	arm64-*)
+		cpu=aarch64
 		;;
 	arm64-*)
 		cpu=aarch64
@@ -1423,10 +1426,10 @@ case $os in
 		os=os400
 		;;
 	sunos5*)
-		os=`echo "$os" | sed -e 's|sunos5|solaris2|'`
+		os=$(echo "$os" | sed -e 's|sunos5|solaris2|')
 		;;
 	sunos6*)
-		os=`echo "$os" | sed -e 's|sunos6|solaris3|'`
+		os=$(echo "$os" | sed -e 's|sunos6|solaris3|')
 		;;
 	wince*)
 		os=wince
